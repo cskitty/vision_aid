@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:object_detection/ui/home_view.dart';
+import 'package:vision_aid/ui/home_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
