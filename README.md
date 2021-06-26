@@ -3,14 +3,14 @@
 
 ## Install flutter
 
-git clone https://github.com/flutter/flutter.git -b stable
-cd flutter
-flutter --version
-flutter precache
+git clone https://github.com/flutter/flutter.git -b stable  
+cd flutter  
+flutter --version  
+flutter precache  
 
 ## Install cocoapods
 
-sudo gem install cocoapods
+sudo gem install cocoapods  
 gem which cocoapods
 
 ##  Check flutter environment
@@ -23,9 +23,9 @@ flutter packages get
 
 ## Install and Debug
 
-open visual studio code
-install flutter plugin
-open visual_aid directory
+open visual studio code  
+install flutter plugin  
+open visual_aid directory  
 open lib/main.dart, click the run to install on iphone
 
 
