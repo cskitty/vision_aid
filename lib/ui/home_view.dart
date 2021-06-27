@@ -14,6 +14,8 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
+  bool _has_started = false;
+
   /// Results to draw bounding boxes
   List<Recognition> results;
 
@@ -26,6 +28,9 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Visual Aid'),
+      ),
       key: scaffoldKey,
       backgroundColor: Colors.black,
       body: Stack(
@@ -36,65 +41,61 @@ class _HomeViewState extends State<HomeView> {
           // Bounding boxes
           boundingBoxes(results),
 
-          // Heading
           Align(
-            alignment: Alignment.topLeft,
-            child: Container(
-              padding: EdgeInsets.only(top: 20),
-              child: Text(
-                'Object Detection Flutter',
-                textAlign: TextAlign.left,
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.deepOrangeAccent.withOpacity(0.6),
-                ),
-              ),
-            ),
+            alignment: Alignment(0, 0.6),
+            child: SizedBox(
+                height: 100, //height of button
+                width: 400, //width of button
+                child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        primary: _has_started
+                            ? Colors.red
+                            : Colors.blue, //background color of button
+                        side: BorderSide(
+                            width: 3,
+                            color: Colors.brown), //border width and color
+                        elevation: 10, //elevation of button
+                        shape: RoundedRectangleBorder(
+                            //to set border radius to button
+                            borderRadius: BorderRadius.circular(30)),
+                        padding:
+                            EdgeInsets.all(20) //content padding inside button
+                        ),
+                    onPressed: () {
+                      setState(() {
+                        _has_started = !_has_started;
+                        CameraViewSingleton.startPredicting = _has_started;
+                      });
+                    },
+                    child: _has_started ? Text("START") : Text("STOP"))),
           ),
 
-          // Bottom Sheet
           Align(
             alignment: Alignment.bottomCenter,
-            child: DraggableScrollableSheet(
-              initialChildSize: 0.4,
-              minChildSize: 0.1,
-              maxChildSize: 0.5,
-              builder: (_, ScrollController scrollController) => Container(
-                width: double.maxFinite,
-                decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
-                    borderRadius: BORDER_RADIUS_BOTTOM_SHEET),
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.keyboard_arrow_up,
-                            size: 48, color: Colors.orange),
-                        (stats != null)
-                            ? Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  children: [
-                                    StatsRow('Inference time:',
-                                        '${stats.inferenceTime} ms'),
-                                    StatsRow('Total prediction time:',
-                                        '${stats.totalElapsedTime} ms'),
-                                    StatsRow('Pre-processing time:',
-                                        '${stats.preProcessingTime} ms'),
-                                    StatsRow('Frame',
-                                        '${CameraViewSingleton.inputImageSize?.width} X ${CameraViewSingleton.inputImageSize?.height}'),
-                                  ],
-                                ),
-                              )
-                            : Container()
-                      ],
-                    ),
-                  ),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                TextButton.icon(
+                  icon: Icon(Icons.access_alarm),
+                  label:
+                      Text((stats != null) ? '${stats.inferenceTime} ms' : ''),
+                  onPressed: () {},
                 ),
-              ),
+                TextButton.icon(
+                  icon: Icon(Icons.access_time_outlined),
+                  label: Text(
+                      (stats != null) ? '${stats.totalElapsedTime} ms' : ''),
+                  onPressed: () {},
+                ),
+                TextButton.icon(
+                  icon: Icon(Icons.aspect_ratio),
+                  label: Text((stats != null)
+                      ? '${CameraViewSingleton.inputImageSize?.width} X ${CameraViewSingleton.inputImageSize?.height}'
+                      : ''),
+                  onPressed: () {},
+                ),
+              ],
             ),
           )
         ],
