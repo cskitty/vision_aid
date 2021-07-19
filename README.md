@@ -1,23 +1,23 @@
 # App for  Object Detection, Voice Recognition, TTS using Flutter, TF Lite
 
 
-## Install flutter
+## Install Flutter
 
 git clone https://github.com/flutter/flutter.git -b stable  
 cd flutter  
 flutter --version  
 flutter precache  
 
-## Install cocoapods
+## Install Cocoapods
 
 sudo gem install cocoapods  
 gem which cocoapods
 
-##  Check flutter environment
+##  Check Flutter Environment
 
 flutter docter
 
-## Set up the app
+## Set Up the App
 
 flutter packages get
 
