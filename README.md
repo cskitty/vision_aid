@@ -2,23 +2,30 @@
 
 ## Install Flutter
 
-git clone https://github.com/flutter/flutter.git -b stable  
-cd flutter  
-flutter --version  
+```console
+git clone https://github.com/flutter/flutter.git -b stable
+cd flutter
+flutter --version
 flutter precache
+```
 
 ## Install Cocoapods
 
-sudo gem install cocoapods  
+```console
+sudo gem install cocoapods
 gem which cocoapods
+```
 
 ## Check Flutter Environment
 
+````console
 flutter docter
+```
 
 ## Set Up the App
-
+```console
 flutter packages get
+````
 
 ## Install and Debug
 
@@ -29,8 +36,10 @@ open lib/main.dart, click the run to install on iphone
 
 ## Command Line
 
+```console
 flutter build ios
 flutter install
+```
 
 ## iPhone Setup
 
