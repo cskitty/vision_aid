@@ -20,6 +20,9 @@ class Classifier {
   static const String MODEL_FILE_NAME = "detect.tflite";
   static const String LABEL_FILE_NAME = "labelmap.txt";
 
+  //static const String MODEL_FILE_NAME = "ssdlite_object_detection.tflite";
+  //static const String LABEL_FILE_NAME = "ssdlite_object_detection_labelmap.txt";
+
   /// Input size of image (height = width = 300)
   static const int INPUT_SIZE = 300;
 

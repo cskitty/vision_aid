@@ -4,6 +4,7 @@ import 'package:vision_aid/tflite/recognition.dart';
 import 'package:vision_aid/tflite/stats.dart';
 import 'package:vision_aid/ui/box_widget.dart';
 import 'package:vision_aid/ui/camera_view_singleton.dart';
+import 'package:volume_watcher/volume_watcher.dart';
 
 import 'camera_view.dart';
 
@@ -67,7 +68,20 @@ class _HomeViewState extends State<HomeView> {
                         CameraViewSingleton.startPredicting = _has_started;
                       });
                     },
-                    child: _has_started ? Text("START") : Text("STOP"))),
+                    child: _has_started ? Text("STOP") : Text("START"))),
+          ),
+
+          Align(
+            child: SizedBox(
+              child: VolumeWatcher(
+                onVolumeChangeListener: (double volume) {
+                  setState(() {
+                    _has_started = !_has_started;
+                    CameraViewSingleton.startPredicting = _has_started;
+                  });
+                },
+              ),
+            ),
           ),
 
           Align(
