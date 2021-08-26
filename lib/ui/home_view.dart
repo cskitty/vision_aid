@@ -6,7 +6,7 @@ import 'package:vision_aid/ui/box_widget.dart';
 import 'package:vision_aid/ui/camera_view_singleton.dart';
 import 'package:volume_watcher/volume_watcher.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-
+import 'package:vision_aid/tts_settings.dart';
 import 'camera_view.dart';
 
 /// [HomeView] stacks [CameraView] and [BoxWidget]s with bottom sheet for stats
@@ -19,9 +19,9 @@ enum TtsState { playing, stopped }
 
 class _HomeViewState extends State<HomeView> {
   FlutterTts flutterTts;
-  double volume = 0.5;
-  double pitch = 1.0;
-  double rate = 0.5;
+  // double volume = 0.5;
+  // double pitch = 1.0;
+  // double rate = 0.5;
 
   TtsState ttsState = TtsState.stopped;
   get isPlaying => ttsState == TtsState.playing;
@@ -52,9 +52,9 @@ class _HomeViewState extends State<HomeView> {
     flutterTts = FlutterTts();
     flutterTts.setLanguage("en-Us");
     //flutterTts.setVoice("en-us-x-sfg#male_1-local");
-    flutterTts.setVolume(volume);
-    flutterTts.setSpeechRate(rate);
-    flutterTts.setPitch(pitch);
+    // await flutterTts.setVolume(TTSsettings.newVolume);
+    // await flutterTts.setSpeechRate(TTSsettings.newRate);
+    // await flutterTts.setPitch(TTSsettings.newPitch);
 
     flutterTts.setStartHandler(() {
       setState(() {
@@ -79,6 +79,9 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Future _speak(sentence) async {
+    await flutterTts.setVolume(TTSsettings.newVolume);
+    await flutterTts.setSpeechRate(TTSsettings.newRate);
+    await flutterTts.setPitch(TTSsettings.newPitch);
     if (!opened) {
       await flutterTts.speak(
           "My vision aid started, please use click button to start object recognition.");

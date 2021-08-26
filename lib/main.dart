@@ -1,20 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'letter_rec.dart';
-import 'speech_input.dart';
-import 'package:flutter/material.dart';
-import 'launch_screen.dart';
-import 'detector.dart';
-import 'settings.dart';
-import 'speech_input.dart';
-import 'package:flutter_tts/flutter_tts.dart';
-import 'speech_input2.dart';
 import 'speech_recognition.dart';
-import 'speech_recognition2.dart';
 import 'ui/home_view.dart';
-import 'speech_input.dart';
-import 'speech_input2.dart';
-import 'reference.dart';
+import 'settings.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
@@ -30,7 +18,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title:"Oracle"),
+      home: MyHomePage(title:"Visual Aid"),
     );
   }
 }
@@ -54,7 +42,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
   int _currentIndex = 0;
   static const TextStyle optionStyle =
   TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
@@ -63,9 +50,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState(){
     _pagelist
+      ..add(SpeechRecognitionPage(title: 'Speech Assistant'))
       ..add(HomeView())
-      ..add(Speech_SynthPage(title: 'Home Screen'))
-      ..add(SpeechRecognitionPage(title: 'App Settings'));
+      ..add(SettingPage(title: 'Settings'));
     super.initState();
   }
 
