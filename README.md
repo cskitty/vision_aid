@@ -1,40 +1,62 @@
-# App for  Object Detection, Voice Recognition, TTS using Flutter, TF Lite
+# App for Object Detection, Voice Recognition, TTS using Flutter, TF Lite
 
+## Features
+
+- [x] Realtime Object Detection
+- [x] Use bluetooth selfie button to start/stop
+- [x] TTS to speak out the recognized object
+- [ ] Add location information on TTS
+- [ ] Add distance estimation
+- [ ] Add warning for objects in front of your feet
+- [ ] Voice interaction for more commands
 
 ## Install Flutter
 
-git clone https://github.com/flutter/flutter.git -b stable  
-cd flutter  
-flutter --version  
-flutter precache  
+```console
+git clone https://github.com/flutter/flutter.git -b stable
+cd flutter
+flutter --version
+flutter precache
+```
 
-## Install Cocoapods
+## Install Cocoapods for iOS
 
-sudo gem install cocoapods  
+```console
+sudo gem install cocoapods
 gem which cocoapods
+```
 
-##  Check Flutter Environment
+## Check Flutter Environment
 
+```console
+## Check environment
 flutter docter
 
 ## Set Up the App
-
 flutter packages get
+```
 
-## Install and Debug
+## Debug
 
 open visual studio code  
 install flutter plugin  
 open visual_aid directory  
 open lib/main.dart, click the run to install on iphone
 
+## Command Line to Install on Iphone
+
+```console
+flutter build ios
+flutter install
+```
 
 ## iPhone Setup
+
 Open ios/Runner.xcworkspace in XCode
 Runner->Targets->Signing&Capabilities
 Select your personal team
 Change Bundle Indentifier to yours
 
-
 ## Accept the iPhone Developer Profile
+
 General->Device Management->Accept developer

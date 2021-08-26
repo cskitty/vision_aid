@@ -4,6 +4,8 @@ import 'package:vision_aid/tflite/recognition.dart';
 import 'package:vision_aid/tflite/stats.dart';
 import 'package:vision_aid/ui/box_widget.dart';
 import 'package:vision_aid/ui/camera_view_singleton.dart';
+import 'package:volume_watcher/volume_watcher.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 import 'camera_view.dart';
 
@@ -13,8 +15,22 @@ class HomeView extends StatefulWidget {
   _HomeViewState createState() => _HomeViewState();
 }
 
+enum TtsState { playing, stopped }
+
 class _HomeViewState extends State<HomeView> {
+  FlutterTts flutterTts;
+  double volume = 0.5;
+  double pitch = 1.0;
+  double rate = 0.5;
+
+  TtsState ttsState = TtsState.stopped;
+  get isPlaying => ttsState == TtsState.playing;
+  get isStopped => ttsState == TtsState.stopped;
+
   bool _has_started = false;
+  bool _botton_clicked = false;
+  String _newVoiceText;
+  bool opened = false;
 
   /// Results to draw bounding boxes
   List<Recognition> results;
@@ -24,6 +40,75 @@ class _HomeViewState extends State<HomeView> {
 
   /// Scaffold Key
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
+
+  // added for TTS
+  @override
+  initState() {
+    super.initState();
+    initTts();
+  }
+
+  initTts() {
+    flutterTts = FlutterTts();
+    flutterTts.setLanguage("en-Us");
+    //flutterTts.setVoice("en-us-x-sfg#male_1-local");
+    flutterTts.setVolume(volume);
+    flutterTts.setSpeechRate(rate);
+    flutterTts.setPitch(pitch);
+
+    flutterTts.setStartHandler(() {
+      setState(() {
+        print("playing");
+        ttsState = TtsState.playing;
+      });
+    });
+
+    flutterTts.setCompletionHandler(() {
+      setState(() {
+        print("Complete");
+        ttsState = TtsState.stopped;
+      });
+    });
+
+    flutterTts.setErrorHandler((msg) {
+      setState(() {
+        print("error: $msg");
+        ttsState = TtsState.stopped;
+      });
+    });
+  }
+
+  Future _speak(sentence) async {
+    if (!opened) {
+      await flutterTts.speak(
+          "My vision aid started, please use click button to start object recognition.");
+      opened = true;
+    }
+    if (sentence != null && sentence.isNotEmpty) {
+      var result = await flutterTts.speak(sentence);
+      if (result == 1) setState(() => ttsState = TtsState.playing);
+    } else {
+      //await flutterTts.speak("Empty or can not recognize!");
+    }
+    //}
+  }
+
+  Future _stop() async {
+    var result = await flutterTts.stop();
+    if (result == 1) setState(() => ttsState = TtsState.stopped);
+  }
+
+  String _getObject(results) {
+    String maxLabel;
+    double maxScore = 0;
+    for (var r in results) {
+      if (r.score > maxScore) {
+        maxScore = r.score;
+        maxLabel = r.label;
+      }
+    }
+    return maxLabel;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,10 +149,37 @@ class _HomeViewState extends State<HomeView> {
                     onPressed: () {
                       setState(() {
                         _has_started = !_has_started;
+                        _botton_clicked = !_botton_clicked;
+                        if (!_botton_clicked) {
+                          _speak(_newVoiceText);
+                        } else {
+                          _stop();
+                        }
                         CameraViewSingleton.startPredicting = _has_started;
                       });
                     },
-                    child: _has_started ? Text("START") : Text("STOP"))),
+                    child: _has_started
+                        ? Text(_newVoiceText)
+                        : Text(_newVoiceText))),
+          ),
+
+          Align(
+            child: SizedBox(
+              child: VolumeWatcher(
+                onVolumeChangeListener: (double volume) {
+                  setState(() {
+                    _has_started = !_has_started;
+                    _botton_clicked = !_botton_clicked;
+                    if (!_botton_clicked) {
+                      _speak(_newVoiceText);
+                    } else {
+                      _stop();
+                    }
+                    CameraViewSingleton.startPredicting = _has_started;
+                  });
+                },
+              ),
+            ),
           ),
 
           Align(
@@ -121,6 +233,7 @@ class _HomeViewState extends State<HomeView> {
   void resultsCallback(List<Recognition> results) {
     setState(() {
       this.results = results;
+      this._newVoiceText = _getObject(results);
     });
   }
 
