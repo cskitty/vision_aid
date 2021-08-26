@@ -233,7 +233,11 @@ class _HomeViewState extends State<HomeView> {
   void resultsCallback(List<Recognition> results) {
     setState(() {
       this.results = results;
-      this._newVoiceText = _getObject(results);
+      var newtext = _getObject(results);
+      if (newtext != this._newVoiceText) {
+        this._newVoiceText = newtext;
+        _speak(newtext);
+      }
     });
   }
 
