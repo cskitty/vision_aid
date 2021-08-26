@@ -141,7 +141,7 @@ class _SettingPageState extends State<SettingPage> {
                 )
             ),
             Expanded(
-                flex:55,
+                flex:45,
                 child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
                     child: Column(children: [
@@ -150,30 +150,34 @@ class _SettingPageState extends State<SettingPage> {
                     ]))
             ),
             Expanded(
-              flex: 20,
-              child: Container(
-                width: double.infinity,
-                margin: EdgeInsets.only(
-                    left: 10, right: 10, top: 10, bottom: 10),
-                child: ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(
-                          Colors.deepPurpleAccent),
-                    ),
-                    onPressed: () {
-                      _listen();
-
-                      //Navigator.push(
-                      //  context,
-                      //MaterialPageRoute(builder: (context) => SpeechRecognitionPage(title:'Speech Recognition'))
-                      //);
-                    },
-                    child: Text(
-                      'Speech Recognition',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 24),)
-                ),
-              ),
+                flex:30,
+                child:
+                Container(
+                  //width: double.infinity,
+                  margin: EdgeInsets.only(left:15,right:15,top:10,bottom:35),
+                  child: SizedBox(
+                      height: 125, //height of button
+                      width: 400, //width of button
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            primary: Colors.blueAccent, //background color of button
+                            side: BorderSide(
+                                width: 3,
+                                color: Colors.lightBlue), //border width and color
+                            elevation: 10, //elevation of button
+                            shape: RoundedRectangleBorder(
+                              //to set border radius to button
+                                borderRadius: BorderRadius.circular(30)),
+                            padding:
+                            EdgeInsets.all(20) //content padding inside button
+                        ),
+                        onPressed: () async {
+                          //playAudio();
+                          _listen();
+                        },
+                        child: Icon(_isListening ? Icons.mic : Icons.mic_none),
+                      )),
+                )
             ),
 
 
@@ -219,7 +223,45 @@ class _SettingPageState extends State<SettingPage> {
 
   Widget _buildSliders() {
     return Column(
-      children: [_volume(), _pitch(), _rate()],
+      //mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          margin: EdgeInsets.only(left: 30),
+          child: Text(
+            "Volume",
+            style: TextStyle(
+                fontSize: 16,
+                color: Colors.black,
+                //fontWeight: FontWeight.bold
+            ),
+          ),
+        ),
+        _volume(),
+        Container(
+          margin: EdgeInsets.only(left: 30),
+          child: Text(
+            "Pitch",
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.black,
+              //fontWeight: FontWeight.bold
+            ),
+          ),
+        ),
+        _pitch(),
+        Container(
+          margin: EdgeInsets.only(left: 30),
+          child: Text(
+            "Rate",
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.black,
+              //fontWeight: FontWeight.bold
+            ),
+          ),
+        ),
+        _rate()],
     );
   }
 
@@ -232,7 +274,9 @@ class _SettingPageState extends State<SettingPage> {
         min: 0.0,
         max: 1.0,
         divisions: 10,
-        label: "Volume: $TTSsettings.newVolume");
+        label: "Volume: $TTSsettings.newVolume",
+        activeColor: Colors.grey,
+    );
   }
 
   Widget _pitch() {
@@ -245,7 +289,7 @@ class _SettingPageState extends State<SettingPage> {
       max: 2.0,
       divisions: 15,
       label: "Pitch: $TTSsettings.newPitch,",
-      activeColor: Colors.red,
+      activeColor: Colors.grey,
     );
   }
 
@@ -259,7 +303,7 @@ class _SettingPageState extends State<SettingPage> {
       max: 1.0,
       divisions: 10,
       label: "Rate: $TTSsettings.newRate",
-      activeColor: Colors.green,
+      activeColor: Colors.grey,
     );
   }
 }

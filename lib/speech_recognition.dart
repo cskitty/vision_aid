@@ -185,22 +185,35 @@ class _SpeechRecognitionPageState extends State<SpeechRecognitionPage> {
             ),
             Expanded(
                 flex:30,
-                child: Container(
-                  width: double.infinity,
-                  height: 400,
-                  margin: EdgeInsets.only(left:15,right:15,top:10,bottom:20),
-                  child: ElevatedButton(
-                    style: ButtonStyle(
-                      foregroundColor: MaterialStateProperty.all<Color>(Colors.blue),
-                    ),
-                    child: Icon(_isListening ? Icons.mic : Icons.mic_none),
-                    onPressed: () async {
-                      //playAudio();
-                      _listen();
-                    },
-                  ),
+                child:
+                Container(
+                  //width: double.infinity,
+                  margin: EdgeInsets.only(left:15,right:15,top:10,bottom:35),
+                  child: SizedBox(
+                      height: 125, //height of button
+                      width: 400, //width of button
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            primary: Colors.blueAccent, //background color of button
+                            side: BorderSide(
+                                width: 3,
+                                color: Colors.lightBlue), //border width and color
+                            elevation: 10, //elevation of button
+                            shape: RoundedRectangleBorder(
+                              //to set border radius to button
+                                borderRadius: BorderRadius.circular(30)),
+                            padding:
+                            EdgeInsets.all(20) //content padding inside button
+                        ),
+                        onPressed: () async {
+                          //playAudio();
+                          _listen();
+                        },
+                        child: Icon(_isListening ? Icons.mic : Icons.mic_none),
+                      )),
                 )
             ),
+
           ],
         ),
 
