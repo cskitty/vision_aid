@@ -124,7 +124,7 @@ class _HomeViewState extends State<HomeView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Visual Aid'),
+        title: Text('My Vision Aid'),
       ),
       key: scaffoldKey,
       backgroundColor: Colors.black,
