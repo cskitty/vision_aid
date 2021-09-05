@@ -27,9 +27,9 @@ class _HomeViewState extends State<HomeView> {
   get isPlaying => ttsState == TtsState.playing;
   get isStopped => ttsState == TtsState.stopped;
 
-  bool _has_started = false;
-  bool _botton_clicked = false;
+  bool _hasStarted = false;
   String _newVoiceText;
+  int unfinished = 0;
   bool opened = false;
 
   /// Results to draw bounding boxes
@@ -41,11 +41,15 @@ class _HomeViewState extends State<HomeView> {
   /// Scaffold Key
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
 
+  var voiceSet;
+
   // added for TTS
   @override
   initState() {
     super.initState();
     initTts();
+
+    voiceSet = new Set();
   }
 
   initTts() {
@@ -87,13 +91,18 @@ class _HomeViewState extends State<HomeView> {
           "My vision aid started, please use click button to start object recognition.");
       opened = true;
     }
+
+    if (unfinished > 2) return;
+
     if (sentence != null && sentence.isNotEmpty) {
+      unfinished++;
       var result = await flutterTts.speak(sentence);
       if (result == 1) setState(() => ttsState = TtsState.playing);
-    } else {
-      //await flutterTts.speak("Empty or can not recognize!");
     }
-    //}
+
+    flutterTts.setCompletionHandler(() async {
+      unfinished--;
+    });
   }
 
   Future _stop() async {
@@ -103,10 +112,11 @@ class _HomeViewState extends State<HomeView> {
 
   String _getObject(results) {
     String maxLabel;
-    double maxScore = 0;
+    double maxSize = 0;
     for (var r in results) {
-      if (r.score > maxScore) {
-        maxScore = r.score;
+      double sz = r.renderLocation.width * r.renderLocation.width;
+      if (sz > maxSize) {
+        maxSize = sz;
         maxLabel = r.label;
       }
     }
@@ -117,7 +127,7 @@ class _HomeViewState extends State<HomeView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Visual Aid'),
+        title: Text('My Vision Aid'),
       ),
       key: scaffoldKey,
       backgroundColor: Colors.black,
@@ -136,7 +146,7 @@ class _HomeViewState extends State<HomeView> {
                 width: 400, //width of button
                 child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                        primary: _has_started
+                        primary: _hasStarted
                             ? Colors.red
                             : Colors.blue, //background color of button
                         side: BorderSide(
@@ -151,17 +161,16 @@ class _HomeViewState extends State<HomeView> {
                         ),
                     onPressed: () {
                       setState(() {
-                        _has_started = !_has_started;
-                        _botton_clicked = !_botton_clicked;
-                        if (!_botton_clicked) {
-                          _speak(_newVoiceText);
+                        _hasStarted = !_hasStarted;
+                        if (_hasStarted) {
+                          _speak("Recognition started");
                         } else {
                           _stop();
                         }
-                        CameraViewSingleton.startPredicting = _has_started;
+                        CameraViewSingleton.startPredicting = _hasStarted;
                       });
                     },
-                    child: _has_started
+                    child: _hasStarted
                         ? Text(_newVoiceText)
                         : Text(_newVoiceText))),
           ),
@@ -171,14 +180,13 @@ class _HomeViewState extends State<HomeView> {
               child: VolumeWatcher(
                 onVolumeChangeListener: (double volume) {
                   setState(() {
-                    _has_started = !_has_started;
-                    _botton_clicked = !_botton_clicked;
-                    if (!_botton_clicked) {
-                      _speak(_newVoiceText);
+                    _hasStarted = !_hasStarted;
+                    if (_hasStarted) {
+                      _speak("Recognition started");
                     } else {
                       _stop();
                     }
-                    CameraViewSingleton.startPredicting = _has_started;
+                    CameraViewSingleton.startPredicting = _hasStarted;
                   });
                 },
               ),
@@ -237,6 +245,7 @@ class _HomeViewState extends State<HomeView> {
     setState(() {
       this.results = results;
       var newtext = _getObject(results);
+
       if (newtext != this._newVoiceText) {
         this._newVoiceText = newtext;
         _speak(newtext);
