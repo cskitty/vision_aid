@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:vision_aid/tts_settings.dart';
 import 'speech_recognition.dart';
 import 'ui/home_view.dart';
 import 'settings.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  TTSsettings.newVolume = (prefs.getDouble('Volume') ??0.5);
+  TTSsettings.newPitch = (prefs.getDouble('Pitch') ??1.25);
+  TTSsettings.newRate = (prefs.getDouble('Rate') ??0.5);
+  //print(TTSsettings.newVolume);
   runApp(MyApp());
 }
 
@@ -15,7 +24,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'My Vision Aid',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primaryColor: Colors.blue.shade300,
+        //primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: MyHomePage(title:"Visual Aid"),
@@ -81,18 +91,18 @@ class _MyHomePageState extends State<MyHomePage> {
             BottomNavigationBarItem(
               icon: Icon(Icons.mic),
               label: 'Speak',
-              backgroundColor: Colors.lightBlueAccent,
+              backgroundColor: Colors.grey,
 
             ),
             BottomNavigationBarItem(
                 icon: Icon(Icons.home),
                 label: 'Home',
-                backgroundColor: Colors.lightBlueAccent
+                backgroundColor: Colors.grey
             ),
             BottomNavigationBarItem(
                 icon: Icon(Icons.settings),
                 label: 'Settings',
-                backgroundColor: Colors.lightBlueAccent
+                backgroundColor: Colors.grey
             ),
           ],
           currentIndex: _currentIndex,
@@ -102,7 +112,7 @@ class _MyHomePageState extends State<MyHomePage> {
               _currentIndex = index;
             });
           },
-          backgroundColor: Colors.lightBlueAccent
+          backgroundColor: Colors.grey.shade300,
       ),
       // This trailing comma makes auto-formatting nicer for build methods.
     );

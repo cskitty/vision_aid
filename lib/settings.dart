@@ -5,6 +5,15 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'tts_settings.dart';
+import 'package:flutter/material.dart';
+import 'package:vision_aid/user_info.dart';
+import 'package:vision_aid/user_preferences.dart';
+import 'settings.dart';
+import 'package:flutter/cupertino.dart';
+import 'profile_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+
 class SettingPage extends StatefulWidget {
   SettingPage({Key key, this.title}) : super(key: key);
 
@@ -18,7 +27,32 @@ class SettingPage extends StatefulWidget {
   _SettingPageState createState() => _SettingPageState();
 }
 
+
+// _savedName() async {
+//   SharedPreferences prefs = await SharedPreferences.getInstance();
+//   await prefs.setString('Full Name', TTSsettings.newVolume);
+// }
+_savedVolume() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setDouble('Volume', TTSsettings.newVolume);
+}
+
+
+_savedPitch() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setDouble('Pitch', TTSsettings.newPitch);
+}
+
+_savedRate() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setDouble('Rate', TTSsettings.newRate);
+}
+
+
 class _SettingPageState extends State<SettingPage> {
+  TextEditingController _controller = new TextEditingController();
+  bool _enabled = false;
+
   FlutterTts flutterTts;
   dynamic languages;
   String language;
@@ -105,6 +139,7 @@ class _SettingPageState extends State<SettingPage> {
 
   @override
   Widget build(BuildContext context) {
+    ThemeData theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
 
@@ -117,31 +152,100 @@ class _SettingPageState extends State<SettingPage> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             Expanded(
-                flex:25,
+                flex:35,
                 child: Container (
-                  margin: EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.brown.shade800,
-                      child: const Text('KH'),
-                    ),
-                    title: Text("Profile"),
-                    subtitle: Text("Kathy"),
-                    onTap:  () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => ProfilePage())
-                    ),
-                    trailing:  Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 24.0,
-                      color: Colors.black54,
-                    ),
+                  margin: EdgeInsets.only(top:10),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          margin: EdgeInsets.only(bottom:15),
+                          child: CircleAvatar(
+                            backgroundColor: Colors.brown.shade800,
+                            radius: 55,
+                            child: const Text('KH'),
+                          ),
+                        ),
+              Container(
+                margin: const EdgeInsets.only(bottom:10),
+                width: 150,
+                alignment: Alignment.center,
+                child: _enabled ?
+                new TextFormField(controller: _controller) :
+                new FocusScope(
+                  node: new FocusScopeNode(),
+                  child: new TextFormField(
+                    textAlign: TextAlign.center,
+                    controller: _controller,
+                    onChanged: (value) {
+                      setState(() {
 
+                      });
+                    },
+                    style: theme.textTheme.subhead.copyWith(
+                      color: Colors.black,
+                    ),
+                    decoration: new InputDecoration(
+                      hintText: _enabled ? _controller : 'Edit name',
+                    ),
                   ),
+                ),
+              ),
+                        // Text(
+                        //     'Hello, Kathy! How are you?'
+                        //   //'Hello, $_name! How are you?',
+                        //   //textAlign: TextAlign.center,
+                        //   //style: const TextStyle(fontWeight: FontWeight.bold),
+                        // ),
+                Container(
+                  width: double.infinity,
+                  height:40,
+                  margin: EdgeInsets.only(left:15,right:15,bottom:5,top:2),
+
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        primary: Colors.blueAccent, //background color of button
+                        side: BorderSide(
+                            width: 3,
+                            color: Colors.lightBlue), //border width and color
+                        elevation: 10, //elevation of button
+                        //shape: RoundedRectangleBorder(
+                          //to set border radius to button
+                            //borderRadius: BorderRadius.circular(15)),
+                        //padding:
+                        //EdgeInsets.all(20) //content padding inside button
+                    ),
+                    onPressed: () {
+                    },
+                    child: Text('Edit Profile'),
+                  ),
+                )
+                        
+                      ],
+
+                    )
+                  // child: ListTile(
+                  //   leading: CircleAvatar(
+                  //     backgroundColor: Colors.brown.shade800,
+                  //     child: const Text('KH'),
+                  //   ),
+                  //   title: Text("Profile"),
+                  //   subtitle: Text("Kathy"),
+                  //   onTap:  () => Navigator.push(
+                  //       context,
+                  //       MaterialPageRoute(builder: (context) => ProfilePage())
+                  //   ),
+                  //   trailing:  Icon(
+                  //     Icons.arrow_forward_ios_rounded,
+                  //     size: 24.0,
+                  //     color: Colors.black54,
+                  //   ),
+                  //
+                  // ),
                 )
             ),
             Expanded(
-                flex:45,
+                flex:35,
                 child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
                     child: Column(children: [
@@ -185,6 +289,14 @@ class _SettingPageState extends State<SettingPage> {
 
         ),
       ),
+      // floatingActionButton: new FloatingActionButton(
+      //     child: new Icon(icon),
+      //     onPressed: () {
+      //       setState(() {
+      //         _enabled = !_enabled;
+      //       });
+      //     }
+      // ),
       // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
@@ -269,12 +381,14 @@ class _SettingPageState extends State<SettingPage> {
     return Slider(
         value: TTSsettings.newVolume,
         onChanged: (newVolume) {
+
           setState(() => TTSsettings.newVolume = newVolume);
+          _savedVolume();
         },
         min: 0.0,
         max: 1.0,
         divisions: 10,
-        label: "Volume: $TTSsettings.newVolume",
+        //label: 'Volume: $_value',
         activeColor: Colors.grey,
     );
   }
@@ -284,11 +398,12 @@ class _SettingPageState extends State<SettingPage> {
       value: TTSsettings.newPitch,
       onChanged: (newPitch) {
         setState(() => TTSsettings.newPitch = newPitch);
+        _savedPitch();
       },
       min: 0.5,
       max: 2.0,
       divisions: 15,
-      label: "Pitch: $TTSsettings.newPitch,",
+      //label: "Pitch: $TTSsettings.newPitch,",
       activeColor: Colors.grey,
     );
   }
@@ -298,11 +413,12 @@ class _SettingPageState extends State<SettingPage> {
       value: TTSsettings.newRate,
       onChanged: (newRate) {
         setState(() => TTSsettings.newRate = newRate);
+        _savedRate();
       },
       min: 0.0,
       max: 1.0,
       divisions: 10,
-      label: "Rate: $TTSsettings.newRate",
+      //label: "Rate: $TTSsettings.newRate",
       activeColor: Colors.grey,
     );
   }
