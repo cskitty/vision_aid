@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
-import 'profile.dart';
+
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_tts/flutter_tts.dart';
@@ -12,7 +12,7 @@ import 'settings.dart';
 import 'package:flutter/cupertino.dart';
 import 'profile_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:vision_aid/speech_singleton.dart';
 
 class SettingPage extends StatefulWidget {
   SettingPage({Key key, this.title}) : super(key: key);
@@ -27,7 +27,6 @@ class SettingPage extends StatefulWidget {
   _SettingPageState createState() => _SettingPageState();
 }
 
-
 // _savedName() async {
 //   SharedPreferences prefs = await SharedPreferences.getInstance();
 //   await prefs.setString('Full Name', TTSsettings.newVolume);
@@ -35,25 +34,32 @@ class SettingPage extends StatefulWidget {
 _savedVolume() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setDouble('Volume', TTSsettings.newVolume);
-}
 
+  SpeechSingleton().setVolume(TTSsettings.newVolume);
+}
 
 _savedPitch() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setDouble('Pitch', TTSsettings.newPitch);
+
+  SpeechSingleton().setPitch(TTSsettings.newPitch);
 }
 
 _savedRate() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setDouble('Rate', TTSsettings.newRate);
+
+  SpeechSingleton().setPitch(TTSsettings.newRate);
 }
 
-
 class _SettingPageState extends State<SettingPage> {
+  SpeechSingleton _myTts = SpeechSingleton();
+
   TextEditingController _controller = new TextEditingController();
   bool _enabled = false;
 
   FlutterTts flutterTts;
+
   dynamic languages;
   String language;
 
@@ -62,14 +68,11 @@ class _SettingPageState extends State<SettingPage> {
   String _text = 'Press the button and start speaking';
   double _confidence = 1.0;
 
-
-
   Future _getLanguages() async {
     languages = await flutterTts.getLanguages;
     print("print ${languages}");
     if (languages != null) setState(() => languages);
   }
-
 
   List<DropdownMenuItem<String>> getEnginesDropDownMenuItems(dynamic engines) {
     var items = <DropdownMenuItem<String>>[];
@@ -88,38 +91,37 @@ class _SettingPageState extends State<SettingPage> {
       if (available) {
         setState(() => _isListening = true);
         _speech.listen(
-          onResult: (val) =>
-              setState(() {
-                _text = val.recognizedWords;
-                print(_text);
-                //if (val.hasConfidenceRating && val.confidence > 0) {
-                //_confidence = val.confidence;
-                //}
-                // if (_text == "open object detector" || _text == "open object recognition" || _text == "object detection" || _text == "object recognizer" ||_text == "detect objects"|| _text == "recognize objects"){
-                //   Navigator.push(
-                //       context,
-                //       MaterialPageRoute(builder: (context) => HomePage(cameras))
-                //   );
-                // }
-                // if (_text == "open letter recognition"){
-                //   Navigator.push(
-                //       context,
-                //       MaterialPageRoute(builder: (context) => LetterRecognitionPage(title: "Letter Recognition"))
-                //   );
-                // }
-                // if (_text == "open settings"){
-                //   Navigator.push(
-                //       context,
-                //       MaterialPageRoute(builder: (context) => SettingPage(title: "Settings"))
-                //   );
-                //};
-                // if (_text == "Mute??"){
-                //   Navigator.push(
-                //       context,
-                //       MaterialPageRoute(builder: (context) => LetterRecognitionPage(title: "Letter Recognition"))
-                //   );
-                // }
-              }),
+          onResult: (val) => setState(() {
+            _text = val.recognizedWords;
+            print(_text);
+            //if (val.hasConfidenceRating && val.confidence > 0) {
+            //_confidence = val.confidence;
+            //}
+            // if (_text == "open object detector" || _text == "open object recognition" || _text == "object detection" || _text == "object recognizer" ||_text == "detect objects"|| _text == "recognize objects"){
+            //   Navigator.push(
+            //       context,
+            //       MaterialPageRoute(builder: (context) => HomePage(cameras))
+            //   );
+            // }
+            // if (_text == "open letter recognition"){
+            //   Navigator.push(
+            //       context,
+            //       MaterialPageRoute(builder: (context) => LetterRecognitionPage(title: "Letter Recognition"))
+            //   );
+            // }
+            // if (_text == "open settings"){
+            //   Navigator.push(
+            //       context,
+            //       MaterialPageRoute(builder: (context) => SettingPage(title: "Settings"))
+            //   );
+            //};
+            // if (_text == "Mute??"){
+            //   Navigator.push(
+            //       context,
+            //       MaterialPageRoute(builder: (context) => LetterRecognitionPage(title: "Letter Recognition"))
+            //   );
+            // }
+          }),
         );
       }
     } else {
@@ -136,157 +138,147 @@ class _SettingPageState extends State<SettingPage> {
     _getLanguages();
   }
 
-
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-
         title: Text(widget.title),
       ),
       body: Center(
-
         child: Column(
-
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             Expanded(
-                flex:35,
-                child: Container (
-                  margin: EdgeInsets.only(top:10),
+                flex: 35,
+                child: Container(
+                    margin: EdgeInsets.only(top: 10),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                          margin: EdgeInsets.only(bottom:15),
+                          margin: EdgeInsets.only(bottom: 15),
                           child: CircleAvatar(
                             backgroundColor: Colors.brown.shade800,
                             radius: 55,
                             child: const Text('KH'),
                           ),
                         ),
-              Container(
-                margin: const EdgeInsets.only(bottom:10),
-                width: 150,
-                alignment: Alignment.center,
-                child: _enabled ?
-                new TextFormField(controller: _controller) :
-                new FocusScope(
-                  node: new FocusScopeNode(),
-                  child: new TextFormField(
-                    textAlign: TextAlign.center,
-                    controller: _controller,
-                    onChanged: (value) {
-                      setState(() {
-
-                      });
-                    },
-                    style: theme.textTheme.subhead.copyWith(
-                      color: Colors.black,
-                    ),
-                    decoration: new InputDecoration(
-                      hintText: _enabled ? _controller : 'Edit name',
-                    ),
-                  ),
-                ),
-              ),
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          width: 150,
+                          alignment: Alignment.center,
+                          child: _enabled
+                              ? new TextFormField(controller: _controller)
+                              : new FocusScope(
+                                  node: new FocusScopeNode(),
+                                  child: new TextFormField(
+                                    textAlign: TextAlign.center,
+                                    controller: _controller,
+                                    onChanged: (value) {
+                                      setState(() {});
+                                    },
+                                    style: theme.textTheme.subhead.copyWith(
+                                      color: Colors.black,
+                                    ),
+                                    decoration: new InputDecoration(
+                                      hintText:
+                                          _enabled ? _controller : 'Edit name',
+                                    ),
+                                  ),
+                                ),
+                        ),
                         // Text(
                         //     'Hello, Kathy! How are you?'
                         //   //'Hello, $_name! How are you?',
                         //   //textAlign: TextAlign.center,
                         //   //style: const TextStyle(fontWeight: FontWeight.bold),
                         // ),
-                Container(
-                  width: double.infinity,
-                  height:40,
-                  margin: EdgeInsets.only(left:15,right:15,bottom:5,top:2),
-
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        primary: Colors.blueAccent, //background color of button
-                        side: BorderSide(
-                            width: 3,
-                            color: Colors.lightBlue), //border width and color
-                        elevation: 10, //elevation of button
-                        //shape: RoundedRectangleBorder(
-                          //to set border radius to button
-                            //borderRadius: BorderRadius.circular(15)),
-                        //padding:
-                        //EdgeInsets.all(20) //content padding inside button
-                    ),
-                    onPressed: () {
-                    },
-                    child: Text('Edit Profile'),
-                  ),
-                )
-                        
+                        Container(
+                          width: double.infinity,
+                          height: 40,
+                          margin: EdgeInsets.only(
+                              left: 15, right: 15, bottom: 5, top: 2),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              primary: Colors
+                                  .blueAccent, //background color of button
+                              side: BorderSide(
+                                  width: 3,
+                                  color: Colors
+                                      .lightBlue), //border width and color
+                              elevation: 10, //elevation of button
+                              //shape: RoundedRectangleBorder(
+                              //to set border radius to button
+                              //borderRadius: BorderRadius.circular(15)),
+                              //padding:
+                              //EdgeInsets.all(20) //content padding inside button
+                            ),
+                            onPressed: () {},
+                            child: Text('Edit Profile'),
+                          ),
+                        )
                       ],
-
                     )
-                  // child: ListTile(
-                  //   leading: CircleAvatar(
-                  //     backgroundColor: Colors.brown.shade800,
-                  //     child: const Text('KH'),
-                  //   ),
-                  //   title: Text("Profile"),
-                  //   subtitle: Text("Kathy"),
-                  //   onTap:  () => Navigator.push(
-                  //       context,
-                  //       MaterialPageRoute(builder: (context) => ProfilePage())
-                  //   ),
-                  //   trailing:  Icon(
-                  //     Icons.arrow_forward_ios_rounded,
-                  //     size: 24.0,
-                  //     color: Colors.black54,
-                  //   ),
-                  //
-                  // ),
-                )
-            ),
+                    // child: ListTile(
+                    //   leading: CircleAvatar(
+                    //     backgroundColor: Colors.brown.shade800,
+                    //     child: const Text('KH'),
+                    //   ),
+                    //   title: Text("Profile"),
+                    //   subtitle: Text("Kathy"),
+                    //   onTap:  () => Navigator.push(
+                    //       context,
+                    //       MaterialPageRoute(builder: (context) => ProfilePage())
+                    //   ),
+                    //   trailing:  Icon(
+                    //     Icons.arrow_forward_ios_rounded,
+                    //     size: 24.0,
+                    //     color: Colors.black54,
+                    //   ),
+                    //
+                    // ),
+                    )),
             Expanded(
-                flex:35,
+                flex: 35,
                 child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
                     child: Column(children: [
                       languages != null ? _languageDropDownSection() : Text(""),
                       _buildSliders()
-                    ]))
-            ),
+                    ]))),
             Expanded(
-                flex:30,
-                child:
-                Container(
+                flex: 30,
+                child: Container(
                   //width: double.infinity,
-                  margin: EdgeInsets.only(left:15,right:15,top:10,bottom:35),
+                  margin:
+                      EdgeInsets.only(left: 15, right: 15, top: 10, bottom: 35),
                   child: SizedBox(
                       height: 125, //height of button
                       width: 400, //width of button
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                            primary: Colors.blueAccent, //background color of button
+                            primary:
+                                Colors.blueAccent, //background color of button
                             side: BorderSide(
                                 width: 3,
-                                color: Colors.lightBlue), //border width and color
+                                color:
+                                    Colors.lightBlue), //border width and color
                             elevation: 10, //elevation of button
                             shape: RoundedRectangleBorder(
-                              //to set border radius to button
+                                //to set border radius to button
                                 borderRadius: BorderRadius.circular(30)),
-                            padding:
-                            EdgeInsets.all(20) //content padding inside button
-                        ),
+                            padding: EdgeInsets.all(
+                                20) //content padding inside button
+                            ),
                         onPressed: () async {
                           //playAudio();
                           _listen();
                         },
                         child: Icon(_isListening ? Icons.mic : Icons.mic_none),
                       )),
-                )
-            ),
-
-
+                )),
           ],
-
         ),
       ),
       // floatingActionButton: new FloatingActionButton(
@@ -301,16 +293,15 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 
-  Widget _languageDropDownSection() =>
-      Container(
-          padding: EdgeInsets.only(top: 50.0),
-          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            DropdownButton(
-              //value: language,
-              //items: getLanguageDropDownMenuItems(language),
-              //onChanged: changedLanguageDropDownItem,
+  Widget _languageDropDownSection() => Container(
+      padding: EdgeInsets.only(top: 50.0),
+      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+        DropdownButton(
+            //value: language,
+            //items: getLanguageDropDownMenuItems(language),
+            //onChanged: changedLanguageDropDownItem,
             )
-          ]));
+      ]));
 
   Column _buildButtonColumn(Color color, Color splashColor, IconData icon,
       String label, Function func) {
@@ -343,9 +334,9 @@ class _SettingPageState extends State<SettingPage> {
           child: Text(
             "Volume",
             style: TextStyle(
-                fontSize: 16,
-                color: Colors.black,
-                //fontWeight: FontWeight.bold
+              fontSize: 16,
+              color: Colors.black,
+              //fontWeight: FontWeight.bold
             ),
           ),
         ),
@@ -373,23 +364,23 @@ class _SettingPageState extends State<SettingPage> {
             ),
           ),
         ),
-        _rate()],
+        _rate()
+      ],
     );
   }
 
   Widget _volume() {
     return Slider(
-        value: TTSsettings.newVolume,
-        onChanged: (newVolume) {
-
-          setState(() => TTSsettings.newVolume = newVolume);
-          _savedVolume();
-        },
-        min: 0.0,
-        max: 1.0,
-        divisions: 10,
-        //label: 'Volume: $_value',
-        activeColor: Colors.grey,
+      value: TTSsettings.newVolume,
+      onChanged: (newVolume) {
+        setState(() => TTSsettings.newVolume = newVolume);
+        _savedVolume();
+      },
+      min: 0.0,
+      max: 1.0,
+      divisions: 10,
+      //label: 'Volume: $_value',
+      activeColor: Colors.grey,
     );
   }
 
@@ -423,6 +414,3 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 }
-
-
-

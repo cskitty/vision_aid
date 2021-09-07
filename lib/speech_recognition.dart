@@ -1,96 +1,133 @@
-import 'package:avatar_glow/avatar_glow.dart';
 import 'package:flutter/material.dart';
 import 'package:highlight_text/highlight_text.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'dart:async';
+import 'package:speech_to_text/speech_to_text.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:vision_aid/ui/home_view.dart';
 import 'settings.dart';
 
-
 class SpeechRecognitionPage extends StatefulWidget {
-  SpeechRecognitionPage({Key key,  this.title}) : super(key: key);
+  SpeechRecognitionPage({Key key, this.title}) : super(key: key);
   final String title;
   @override
   _SpeechRecognitionPageState createState() => _SpeechRecognitionPageState();
 }
 
-
-
-enum TtsState { playing, stopped, paused, continued }
-const listeningPath = "listening.mp3";
-
 class _SpeechRecognitionPageState extends State<SpeechRecognitionPage> {
-  bool _animate = true;
+  bool _isListening = false;
+  String _text = 'Press the button and start speaking';
+  bool _hasSpeech = false;
 
+  String lastError = "";
+  String lastStatus = "";
+  String _currentLocaleId = '';
+  final SpeechToText speech = SpeechToText();
 
-  void _listen() async {
-    if (!_isListening) {
-      bool available = await _speech.initialize(
-        onStatus: (val) => print('onStatus: $val'),
-        onError: (val) => print('onError: $val'),
-      );
-      if (available) {
-        setState(() => _isListening = true);
-        _speech.listen(
-          onResult: (val) => setState(() {
-            _text = val.recognizedWords;
-            print(_text);
-            if (val.hasConfidenceRating && val.confidence > 0) {
-              _confidence = val.confidence;
-            }
-            if (_text == "open object detector" || _text == "open object recognition" || _text == "object detection" || _text == "object recognizer" ||_text == "detect objects"|| _text == "recognize objects"){
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => HomeView())
-              );
-            }
+  Future<void> initSpeechState() async {
+    bool hasSpeech = await speech.initialize(
+        onError: errorListener, onStatus: statusListener);
 
-            if (_text == "open settings"){
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SettingPage(title: "Settings"))
-              );
-            }
-            // if (_text == "Mute??"){
-            //   Navigator.push(
-            //       context,
-            //       MaterialPageRoute(builder: (context) => LetterRecognitionPage(title: "Letter Recognition"))
-            //   );
-            // }
-          }),
-        );
-      }
-    } else {
-      setState(() => _isListening = false);
-      _speech.stop();
+    if (hasSpeech) {
+      var systemLocale = await speech.systemLocale();
+      _currentLocaleId = systemLocale?.localeId ?? '';
     }
+
+    if (!mounted) return;
+
+    setState(() {
+      _hasSpeech = hasSpeech;
+    });
   }
 
+  void startListening() {
+    _text = "started";
+    lastError = "";
+    speech.listen(onResult: resultListener);
+    speech.listen(
+        onResult: resultListener,
+        listenFor: Duration(seconds: 10),
+        pauseFor: Duration(seconds: 5),
+        partialResults: true,
+        localeId: _currentLocaleId,
+        cancelOnError: true,
+        listenMode: ListenMode.confirmation);
 
+    setState(() {
+      _isListening = true;
+    });
+  }
+
+  void stopListening() {
+    speech.stop();
+    setState(() {
+      _isListening = false;
+    });
+  }
+
+  void resultListener(SpeechRecognitionResult result) {
+    setState(() {
+      if (result.recognizedWords == _text) {
+        return;
+      }
+
+      _text = result.recognizedWords;
+      var tmp = _text.toLowerCase();
+      if (tmp.contains("object") &&
+          (tmp.contains("detection") ||
+              tmp.contains("recognition") ||
+              tmp.contains("detect") ||
+              tmp.contains("recognizer"))) {
+        stopListening();
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => HomeView()));
+      }
+
+      if (tmp.contains("settings")) {
+        stopListening();
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => SettingPage(title: "Settings")));
+      }
+
+      _confidence = result.confidence;
+
+      if (result.finalResult) {
+        _isListening = false;
+      }
+    });
+  }
+
+  void errorListener(SpeechRecognitionError error) {
+    setState(() {
+      lastError = "${error.errorMsg} - ${error.permanent}";
+    });
+  }
+
+  void statusListener(String status) {
+    setState(() {
+      lastStatus = "$status";
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    stt.SpeechToText _speech = stt.SpeechToText();
-    _speech = stt.SpeechToText();
-    _listen();
+    initSpeechState();
   }
 
   //static AudioCache player = new AudioCache();
   FlutterTts tts = FlutterTts();
   var speech_input = "Hello, how can I help?";
 
-  SpeechRecognitionPage(){
-    tts.setLanguage('en');
-    tts.setSpeechRate(0.25);
-  }
-
   Map<String, HighlightedWord> words = {
     'Object Detector': HighlightedWord(
       onTap: () {
         print('Object Detector');
       },
-      textStyle:  TextStyle(
+      textStyle: TextStyle(
         color: Colors.blueAccent,
         fontWeight: FontWeight.bold,
       ),
@@ -126,23 +163,20 @@ class _SpeechRecognitionPageState extends State<SpeechRecognitionPage> {
       onTap: () {
         print('Settings');
       },
-      textStyle:  TextStyle(
+      textStyle: TextStyle(
         color: Colors.deepPurpleAccent,
         fontWeight: FontWeight.bold,
       ),
     ),
   };
 
-  stt.SpeechToText _speech = stt.SpeechToText();
-  bool _isListening = false;
-  String _text = 'Press the button and start speaking';
   double _confidence = 1.0;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Confidence: ${(_confidence * 100.0).toStringAsFixed(1)}%'),
+        title: Text(
+            '${lastStatus} [${(_confidence * 100.0).toStringAsFixed(1)}%]'),
       ),
 
       //floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -158,14 +192,13 @@ class _SpeechRecognitionPageState extends State<SpeechRecognitionPage> {
       //child: Icon(_isListening ? Icons.mic : Icons.mic_none),
       //),
       //),
-      body:
-      Center(
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Expanded(
-              flex:70,
-              child:Container(
+              flex: 70,
+              child: Container(
                 child: SingleChildScrollView(
                   reverse: true,
                   child: Container(
@@ -173,7 +206,7 @@ class _SpeechRecognitionPageState extends State<SpeechRecognitionPage> {
                     child: TextHighlight(
                       text: _text,
                       words: words,
-                      textStyle:  TextStyle(
+                      textStyle: TextStyle(
                         fontSize: 32.0,
                         color: Colors.black,
                         fontWeight: FontWeight.w400,
@@ -184,47 +217,49 @@ class _SpeechRecognitionPageState extends State<SpeechRecognitionPage> {
               ),
             ),
             Expanded(
-                flex:30,
-                child:
-                Container(
+                flex: 30,
+                child: Container(
                   //width: double.infinity,
-                  margin: EdgeInsets.only(left:15,right:15,top:10,bottom:35),
+                  margin:
+                      EdgeInsets.only(left: 15, right: 15, top: 10, bottom: 35),
                   child: SizedBox(
                       height: 125, //height of button
                       width: 400, //width of button
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                            primary: Colors.blueAccent, //background color of button
+                            primary:
+                                Colors.blueAccent, //background color of button
                             side: BorderSide(
                                 width: 3,
-                                color: Colors.lightBlue), //border width and color
+                                color:
+                                    Colors.lightBlue), //border width and color
                             elevation: 10, //elevation of button
                             shape: RoundedRectangleBorder(
-                              //to set border radius to button
+                                //to set border radius to button
                                 borderRadius: BorderRadius.circular(30)),
-                            padding:
-                            EdgeInsets.all(20) //content padding inside button
-                        ),
+                            padding: EdgeInsets.all(
+                                20) //content padding inside button
+                            ),
                         onPressed: () async {
                           //playAudio();
-                          _listen();
+                          //_listen();
+                          if (!_isListening) {
+                            startListening();
+                          } else {
+                            stopListening();
+                          }
                         },
                         child: Icon(_isListening ? Icons.mic : Icons.mic_none),
                       )),
-                )
-            ),
-
+                )),
           ],
         ),
-
       ),
-
     );
   }
 
-
   //void playAudio() {
-    //player.play(listeningPath);
+  //player.play(listeningPath);
   //}
 
 }
